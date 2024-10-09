@@ -84,8 +84,7 @@ import { PanelDataErrorView } from './features/panel/components/PanelDataErrorVi
 import { PanelRenderer } from './features/panel/components/PanelRenderer';
 import { DatasourceSrv } from './features/plugins/datasource_srv';
 import { createPluginExtensionsGetter } from './features/plugins/extensions/getPluginExtensions';
-import { setupPluginExtensionRegistries } from './features/plugins/extensions/registry/setup';
-import { PluginExtensionRegistries } from './features/plugins/extensions/registry/types';
+import { pluginExtensionRegistries } from './features/plugins/extensions/registry/setup';
 import { usePluginComponent } from './features/plugins/extensions/usePluginComponent';
 import { usePluginComponents } from './features/plugins/extensions/usePluginComponents';
 import { createUsePluginExtensions } from './features/plugins/extensions/usePluginExtensions';
@@ -126,7 +125,6 @@ if (process.env.NODE_ENV === 'development') {
 
 export class GrafanaApp {
   context!: GrafanaContextType;
-  pluginExtensionsRegistries!: PluginExtensionRegistries;
 
   async init() {
     try {
@@ -216,22 +214,17 @@ export class GrafanaApp {
       setDataSourceSrv(dataSourceSrv);
       initWindowRuntime();
 
-      // Initialize plugin extensions
-      this.pluginExtensionsRegistries = setupPluginExtensionRegistries();
-
       if (contextSrv.user.orgRole !== '') {
         // The "cloud-home-app" is registering banners once it's loaded, and this can cause a rerender in the AppChrome if it's loaded after the Grafana app init.
         // TODO: remove the following exception once the issue mentioned above is fixed.
         const awaitedAppPluginIds = ['cloud-home-app'];
         const awaitedAppPlugins = Object.values(config.apps).filter((app) => awaitedAppPluginIds.includes(app.id));
-        const appPlugins = Object.values(config.apps).filter((app) => !awaitedAppPluginIds.includes(app.id));
 
-        preloadPlugins(appPlugins, this.pluginExtensionsRegistries);
-        await preloadPlugins(awaitedAppPlugins, this.pluginExtensionsRegistries, 'frontend_awaited_plugins_preload');
+        await preloadPlugins(awaitedAppPlugins);
       }
 
-      setPluginExtensionGetter(createPluginExtensionsGetter(this.pluginExtensionsRegistries));
-      setPluginExtensionsHook(createUsePluginExtensions(this.pluginExtensionsRegistries));
+      setPluginExtensionGetter(createPluginExtensionsGetter(pluginExtensionRegistries));
+      setPluginExtensionsHook(createUsePluginExtensions(pluginExtensionRegistries));
       setPluginLinksHook(usePluginLinks);
       setPluginComponentHook(usePluginComponent);
       setPluginComponentsHook(usePluginComponents);
