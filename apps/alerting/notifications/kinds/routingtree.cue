@@ -15,33 +15,55 @@ route: {
 	versions: {
 		"v0alpha1": {
 			schema: {
-				#RouteDefaults: {
-					receiver: string
+				_groupSettings : {
 					group_by?: [...string]
 					group_wait?: string
 					group_interval?:  string
 					repeat_interval?: string
 				}
+				#RouteDefaults: close({
+					_groupSettings
+					receiver: string
+				})
 				#Matcher: {
 					 type: "=" |"!="|"=~"|"!~" @cuetsy(kind="enum")
 					 label: string
 					 value: string
 				}
-				#Route: {
+				#Route: close({
+					_groupSettings
 					receiver?: string
 					matchers?: [...#Matcher]
 					continue: bool
-
-					group_by?: [...string]
 					mute_time_intervals?: [...string]
+				})
+				#Route1: close({
+					#Route
+					routes?: [...#Route2]
+				})
+				#Route2: close({
+					#Route
+					routes?: [...#Route3]
+				})
+				#Route3: close({
+					#Route
+					routes?: [...#Route4]
+				})
+				#Route4: close({
+					#Route
+					routes?: [...#Route5]
+				})
+				#Route5: close({
+					#Route
+					routes?: [...#Route6]
+				})
+				#Route6: close({
+					#Route
 					routes?: [...#Route]
-					group_wait?: string
-					group_interval?:  string
-					repeat_interval?: string
-				}
+				})
 				spec: {
 					 defaults: #RouteDefaults
-					 routes: [...#Route]
+					 routes: [...#Route1]
 				}
 			}
 		}
