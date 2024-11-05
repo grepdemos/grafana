@@ -5,10 +5,15 @@ import { preloadPlugins } from '../pluginPreloader';
 import { getAppPluginConfigs } from './utils';
 
 export function useLoadAppPlugins(pluginIds: string[] = []): { isLoading: boolean } {
-  const [isLoading, setIsLoading] = useState(true);
-  const appConfigs = getAppPluginConfigs(pluginIds);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    const appConfigs = getAppPluginConfigs(pluginIds);
+
     if (!appConfigs.length) {
       return;
     }
@@ -17,7 +22,9 @@ export function useLoadAppPlugins(pluginIds: string[] = []): { isLoading: boolea
     preloadPlugins(appConfigs).then(() => {
       setIsLoading(false);
     });
-  }, [appConfigs]);
+    // TODO: revisit this
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { isLoading };
 }

@@ -20,8 +20,15 @@ const preloadedPluginsCache = new Set<string>();
 
 export async function preloadPlugins(apps: AppPluginConfig[] = []) {
   const isNotYetPreloaded = ({ id }: AppPluginConfig) => !preloadedPluginsCache.has(id);
+  const appPluginsToPreload = apps.filter(isNotYetPreloaded);
 
-  await Promise.all(apps.filter(isNotYetPreloaded).map((config) => preload(config)));
+  if (appPluginsToPreload.length === 0) {
+    return;
+  }
+
+  appPluginsToPreload.forEach(({ id }) => preloadedPluginsCache.add(id));
+
+  await Promise.all(appPluginsToPreload.map(preload));
 }
 
 async function preload(config: AppPluginConfig) {
