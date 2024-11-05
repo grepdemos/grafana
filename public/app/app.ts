@@ -13,7 +13,6 @@ import { createRoot } from 'react-dom/client';
 import {
   locationUtil,
   monacoLanguageRegistry,
-  PluginExtensionPoints,
   setLocale,
   setTimeZoneResolver,
   setWeekStart,
@@ -90,7 +89,7 @@ import { usePluginComponent } from './features/plugins/extensions/usePluginCompo
 import { usePluginComponents } from './features/plugins/extensions/usePluginComponents';
 import { createUsePluginExtensions } from './features/plugins/extensions/usePluginExtensions';
 import { usePluginLinks } from './features/plugins/extensions/usePluginLinks';
-import { getExtensionPointPluginDependencies } from './features/plugins/extensions/utils';
+import { getAppPluginsThatNeedToBePreloaded } from './features/plugins/extensions/utils';
 import { importPanelPlugin, syncGetPanelPlugin } from './features/plugins/importPanelPlugin';
 import { preloadPlugins } from './features/plugins/pluginPreloader';
 import { QueryRunner } from './features/query/state/QueryRunner';
@@ -217,12 +216,7 @@ export class GrafanaApp {
       initWindowRuntime();
 
       if (contextSrv.user.orgRole !== '') {
-        const awaitedAppPluginIds = [
-          // The "cloud-home-app" is registering banners once it's loaded, and this can cause a rerender in the AppChrome if it's loaded after the Grafana app init.
-          'cloud-home-app',
-          // The DashboardPanelMenu extension point is using the `getPluginExtensions()` API in scenes at the moment, which means that it cannot yet benefit from dynamic plugin loading.
-          ...getExtensionPointPluginDependencies(PluginExtensionPoints.DashboardPanelMenu),
-        ];
+        const awaitedAppPluginIds = getAppPluginsThatNeedToBePreloaded();
         const awaitedAppPlugins = Object.values(config.apps).filter((app) => awaitedAppPluginIds.includes(app.id));
 
         await preloadPlugins(awaitedAppPlugins);

@@ -19,6 +19,7 @@ import {
   PluginContextType,
   PluginExtensionExposedComponentConfig,
   PluginExtensionAddedComponentConfig,
+  PluginExtensionPoints,
 } from '@grafana/data';
 import { reportInteraction, config } from '@grafana/runtime';
 import { Modal } from '@grafana/ui';
@@ -628,4 +629,27 @@ export const getAppPluginDependencies = (pluginId: string): string[] => {
   return pluginIdDependencies.reduce((acc, pluginId) => {
     return [...acc, ...getAppPluginDependencies(pluginId)];
   }, pluginIdDependencies);
+};
+
+export const getAppPluginsThatNeedToBePreloaded = (): string[] => {
+  return [
+    // The "cloud-home-app" is registering banners once it's loaded, and this can cause a rerender in the AppChrome if it's loaded after the Grafana app init.
+    'cloud-home-app',
+
+    // The DashboardPanelMenu extension point is using the `getPluginExtensions()` API in scenes at the moment, which means that it cannot yet benefit from dynamic plugin loading.
+    ...getExtensionPointPluginDependencies(PluginExtensionPoints.DashboardPanelMenu),
+
+    // Any plugins that have "preload=true" in their plugin.json file, but doesn't specify the correct extensions metadata.
+    ...Object.values(config.apps)
+      .filter((app) => app.preload)
+      .filter(
+        (app) =>
+          !app.extensions.addedLinks.length &&
+          !app.extensions.addedComponents.length &&
+          !app.extensions.exposedComponents.length &&
+          !app.extensions.extensionPoints.length &&
+          !app.dependencies.extensions.exposedComponents.length
+      )
+      .map((app) => app.id),
+  ];
 };
