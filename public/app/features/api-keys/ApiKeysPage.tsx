@@ -189,7 +189,7 @@ export const MigrationSummary: React.FC<MigrationSummaryProps> = ({ visible, dat
           </p>
         </div>
       )}
-      {data.failedApikeyIDs.length !== 0 && (
+      {data.failedApikeyIDs.length >= 0 && (
         <div style={styles.migrationSummary}>
           <p>
             Migration Complete! Please note, while there might be a few API keys flagged as `failed migrations`, rest

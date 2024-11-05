@@ -81,8 +81,9 @@ export const Node = memo(function Node(props: {
   onMouseEnter: (id: string) => void;
   onMouseLeave: (id: string) => void;
   onClick: (event: MouseEvent<SVGElement>, node: NodeDatum) => void;
+  onDoubleClick?: (event: MouseEvent<SVGElement>, node: NodeDatum) => void;
 }) {
-  const { node, onMouseEnter, onMouseLeave, onClick, hovering } = props;
+  const { node, onMouseEnter, onMouseLeave, onClick, onDoubleClick, hovering } = props;
   const theme = useTheme2();
   const styles = getStyles(theme, hovering);
   const isHovered = hovering === 'active';
@@ -132,6 +133,9 @@ export const Node = memo(function Node(props: {
         onClick={(event) => {
           onClick(event, node);
         }}
+        onDoubleClick={(event) => {
+          onDoubleClick?.(event, node);
+        }}
         className={styles.clickTarget}
         x={node.x - nodeRadius - 5}
         y={node.y - nodeRadius - 5}
@@ -150,9 +154,7 @@ function NodeContents({ node, hovering }: { node: NodeDatum; hovering: HoverStat
   const styles = getStyles(theme, hovering);
   const isHovered = hovering === 'active';
 
-  if (!(node.x !== undefined && node.y !== undefined)) {
-    return null;
-  }
+  const mainStatValue = node.mainStat?.values[node.dataFrameRowIndex + 1];
 
   return node.icon ? (
     <foreignObject x={node.x - 35} y={node.y - 20} width="70" height="40">
@@ -163,7 +165,7 @@ function NodeContents({ node, hovering }: { node: NodeDatum; hovering: HoverStat
   ) : (
     <foreignObject x={node.x - (isHovered ? 100 : 35)} y={node.y - 15} width={isHovered ? '200' : '70'} height="40">
       <div className={cx(styles.statsText, isHovered && styles.textHovering)}>
-        <span>{node.mainStat && statToString(node.mainStat.config, node.mainStat.values[node.dataFrameRowIndex])}</span>
+        <span>{node.mainStat && statToString(node.mainStat.config, mainStatValue)}</span>
         <br />
         <span>
           {node.secondaryStat &&
