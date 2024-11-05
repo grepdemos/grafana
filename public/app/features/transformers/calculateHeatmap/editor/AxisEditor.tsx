@@ -33,7 +33,7 @@ export const AxisEditor = ({ value, onChange, item }: StandardEditorProps<Heatma
   const [isInvalid, setInvalid] = useState<boolean>(false);
 
   const onValueChange = (bucketValue: string) => {
-    setInvalid(!numberOrVariableValidator(bucketValue));
+    // setInvalid(!numberOrVariableValidator(bucketValue));
     onChange({
       ...value,
       value: bucketValue,
